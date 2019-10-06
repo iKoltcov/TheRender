@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheRender", "TheRender\TheRender.csproj", "{B38D2092-D488-4A87-BCB2-473E69FDA103}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheRender.OpenTK", "TheRender.OpenTK\TheRender.OpenTK.csproj", "{2A58CA91-E784-4401-8346-C639F8B573E6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B38D2092-D488-4A87-BCB2-473E69FDA103}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B38D2092-D488-4A87-BCB2-473E69FDA103}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B38D2092-D488-4A87-BCB2-473E69FDA103}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B38D2092-D488-4A87-BCB2-473E69FDA103}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A58CA91-E784-4401-8346-C639F8B573E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A58CA91-E784-4401-8346-C639F8B573E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A58CA91-E784-4401-8346-C639F8B573E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A58CA91-E784-4401-8346-C639F8B573E6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
