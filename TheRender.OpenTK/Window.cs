@@ -107,7 +107,7 @@ namespace TheRender.OpenTK
             colorBufferHandle = GL.GenBuffer();
             vertexBufferHandle = GL.GenBuffer();
 
-            UpdateVertexs();
+            UpdateVertexes();
             UpdateColors(rayTracingService.GetPixels());
         }
 
@@ -117,7 +117,7 @@ namespace TheRender.OpenTK
             Run(60);
         }
 
-        private void UpdateVertexs()
+        private void UpdateVertexes()
         {
             var arrayVertexesIterator = 0;
 
@@ -168,30 +168,36 @@ namespace TheRender.OpenTK
         public string GetPixelColor(int positionX, int positionY)
         {
             try
-            {                
+            {
                 var pixels = rayTracingService.GetPixels();
                 var x = (int) (positionX / (Width / (float) cellWidth));
                 var y = (int) (positionY / (Height / (float) cellHeight));
 
-                var color = pixels[x, y].Color;
-                return $"[{x},{y}] {color.R:F3} {color.G:F3} {color.B:F3}";
+                if (x >= 0 && x < pixels.GetLength(0) && y >= 0 && y < pixels.GetLength(1))
+                {
+                    var color = pixels[x, y].Color;
+                    return $"[{x},{y}] {color.R:F3} {color.G:F3} {color.B:F3}";
+                }
             }
-            catch
+            catch (Exception exception)
             {
-                return null;
+                Console.WriteLine($"{exception.Message} {exception.StackTrace}");
             }
+            
+            return null;
         }
 
         protected override void OnResize(EventArgs e)
         {
             MakeCurrent();
             GL.Viewport(0, 0, Width, Height);
-            UpdateVertexs();
+            UpdateVertexes();
         }
-
-        protected override void OnUnload(EventArgs e)
+        
+        protected override void Dispose(bool manual)
         {
             rayTracingService.Dispose();
+            base.Dispose(manual);
         }
 
         protected override void OnUpdateFrame(FrameEventArgs e)
