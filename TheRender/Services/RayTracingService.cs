@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Numerics;
 using System.Threading;
-using System.Threading.Tasks;
 using TheRender.Entities;
 using TheRender.Entities.Interfaces;
 using TheRender.Extensions;
@@ -82,6 +81,7 @@ namespace TheRender.Services
             for (var taskIterator = 0; taskIterator < countTask; taskIterator++)
             {
                 var iterator = taskIterator;
+                Console.WriteLine($"{taskIterator} thread starts");
                 new Thread(() => RaysTrace(iterator, stepSize, cancellationTokenSource.Token)).Start();
             }
         }
@@ -115,10 +115,11 @@ namespace TheRender.Services
                         pixel.Color = new ColorEntity(pixel.AccumulationColors / ++pixel.CountAccumulations);
                     }
                 }
+                Console.WriteLine($"{taskNumber} thread stops");
             }
             catch (Exception exception)
             {
-                Console.WriteLine(exception.Message + exception.StackTrace);
+                Console.WriteLine($"{exception.Message} {exception.StackTrace}");
             }
         }
 
