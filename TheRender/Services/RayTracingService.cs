@@ -82,8 +82,7 @@ namespace TheRender.Services
             for (var taskIterator = 0; taskIterator < countTask; taskIterator++)
             {
                 var iterator = taskIterator;
-                //new Thread(() => RaysTrace(iterator, stepSize, cancellationTokenSource.Token)).Start();
-                Task.Run(() => RaysTrace(iterator, stepSize, cancellationTokenSource.Token), cancellationTokenSource.Token);
+                new Thread(() => RaysTrace(iterator, stepSize, cancellationTokenSource.Token)).Start();
             }
         }
 
