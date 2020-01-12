@@ -7,25 +7,17 @@ namespace TheRender.Entities
 {
     public class SceneEntity
     {
-        List<Sphere> SpheresCollection;
-        //public List<Light> lightColl;
+        public List<Sphere> SpheresCollection { get; set; }
         public List<LightEntity> Lights { get; set; }
-        //List<Illuminance> illuminances;
-        //List<GeometryEntity> geometries;
-        //List<Material> Materials;
         public List<Material> Materials { get; set; }
         public List<Sphere> Spheres { get; set; }
         public List<GeometryEntity> Geometries { get; set; }
-        //public List<Light> Lights { get { return lightColl; } }
+        public  IntersectionEntity[,] PixelsHandler { get; set; }
 
         public double FOV;
         public int WinWidth, WinHeight;
         public Vector3 Direction { get; set; }
-        //public double dir_x;
-        //public double dir_y;
-        //public double dir_z;
         public  Vector3 Cam { get; set; }
-        public  List<Intersection> PixelsHandler { get; set; }
 
         public void rayCasting(int WinWidth, int WinHeight)
         {
@@ -43,8 +35,7 @@ namespace TheRender.Entities
                     direction.Z = (float) (-WinHeight / (2f * Math.Tan(FOV / 2f)));
 
                     norm_dir = Vector3.Normalize(direction);
-                    //res_color = interactions.castDepthRay(ref origin, ref norm_dir, SpheresCollection);
-                    res_color = Interactions.cast_ray(origin, ref norm_dir, SpheresCollection, Lights);
+                    res_color = TracerService.cast_ray(origin, ref norm_dir, SpheresCollection, Lights);
 
                 }
             }
@@ -70,7 +61,7 @@ namespace TheRender.Entities
         public List<GeometryEntity> GeometriesCollectionGenerator()
         {
             List<GeometryEntity> geometriesColl = new List<GeometryEntity>();
-            SphereEntity temp = new SphereEntity(new Vector3(0, 0, -5), 1f, Materials[0]);
+            Sphere temp = new Sphere(new Vector3(0, 0, -5), 1f, Materials[0]);
             geometriesColl.Add(temp);
 
             ////add more spheres here by modifying and copy-pasting temp
@@ -94,12 +85,21 @@ namespace TheRender.Entities
             //var temp = new LightEntity(new Vector3(5, 10, 20), 10f);
             var temp = new LightEntity(new Vector3(0, 3, 20), 100000f);
             lights.Add(temp);
-            //temp = new Light(new Vector3(-20, 40, 60), 1.5f);
-            //lights.Add(temp);
 
             return lights;
         }
 
+        public void GenerateIntersectionMatrix()
+        {
+            for (int i = 0; i < WinHeight; i++)
+            {
+                for (int j = 0; j < WinWidth; j++)
+                {
+                    PixelsHandler[i,j] = new IntersectionEntity(Cam);
+                }
+            }
+        }
+        
         public SceneEntity()
         {
             Cam = new Vector3();
@@ -109,13 +109,10 @@ namespace TheRender.Entities
 
             this.Direction = new Vector3();
 
-            this.PixelsHandler = new List<Intersection>();
-            for(int i=0;i<WinHeight*WinWidth;i++)
-                this.PixelsHandler.Add(new Intersection(Cam));
-            
+            PixelsHandler = new IntersectionEntity [WinHeight,WinWidth];
+            GenerateIntersectionMatrix();
             Materials = MaterialsCollectionGenerator();
             Geometries = GeometriesCollectionGenerator();
-            //SpheresCollection = SpheresCollection = sphereCollGen();
             Lights = lightCollGen();
         }
     }

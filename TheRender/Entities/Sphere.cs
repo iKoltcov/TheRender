@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Numerics;
 
 namespace TheRender.Entities
@@ -25,12 +21,12 @@ namespace TheRender.Entities
             float cir_len = (float)Math.PI * 2.0f * radius;
             float theta_stp = 2 * radius / (float)DivisionHorizontal;
             float phi_stp = cir_len / (float)DivisionVertical;    //phi - vertical layout
-            Sector tmp = new Sector();
+            SectorEntity tmp;
             for (float theta = -radius; theta < radius; theta += theta_stp)  //creating wireframe
             {
                 for (float phi = 0; phi < 2.0 * Math.PI; phi += phi_stp)
                 {
-                    tmp = new Sector(radius, Center, theta, phi, theta_stp, phi_stp);// ЗАМЕНИТЬ КОНСТРУКТОР НА МЕТОД ИЛИ ВООБЩЕ ВЫНЕСТИ В СТАТИК!
+                    tmp = new SectorEntity(radius, Center, theta, phi, theta_stp, phi_stp);
                     Wireframe.Add(tmp);
                 }
             }

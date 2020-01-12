@@ -9,11 +9,11 @@ namespace TheRender.Entities
         public int DivisionHorizontal { get; set; } //horizontal surface division
         public int DivisionVertical { get; set; }    //vertical surface division
         public Material Material { get; set; }
-        public List<Sector> Wireframe;
+        public List<SectorEntity> Wireframe;
 
         public GeometryEntity(Vector3 c, Material m) : base()
         {
-            Wireframe = new List<Sector>();
+            Wireframe = new List<SectorEntity>();
             DivisionHorizontal = 10;   //for example. Should be changed in constructors
             DivisionVertical = 10;
             Center = c;

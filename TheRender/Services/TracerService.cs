@@ -14,8 +14,7 @@ namespace TheRender.Services
             var res = Vector3.Multiply(N, (float)Vector3.Dot(N, L) * 2f) - L;
             return Vector3.Normalize(res);
         }
-                
-        public static bool scene_intersect(Vector3 orig, Vector3 dir, List<Sphere> spheres, ref Vector3 hit, ref Vector3 N, ref Material material)
+        public  bool scene_intersect(Vector3 orig, Vector3 dir, List<Sphere> spheres, ref Vector3 hit, ref Vector3 N, ref Material Material)
         {
             double spheres_dist = double.MaxValue;
             for (int i = 0; i < spheres.Count; i++)
@@ -26,32 +25,31 @@ namespace TheRender.Services
                     spheres_dist = dist_i;
                     hit = orig + Vector3.Multiply(dir, (float)dist_i);  //hit = orig + dir* dist_i;
                     N = Vector3.Normalize(hit - spheres[i].Center);
-                    material = spheres[i].Material;
+                    Material = spheres[i].Material;
                 }
             }
             return spheres_dist < Double.MaxValue;
         }
 
-        public static Vector3 shadowOriginDeltaCalc(Vector3 lightDir, Vector3 sphereDist) //shift of shadow origin
+        public  Vector3 ShadowOriginDeltaCalc(Vector3 lightDir, Vector3 sphereDist) //shift of shadow origin
         {
             return Vector3.Dot(lightDir, sphereDist) > 0 ? Vector3.Multiply(sphereDist, (float)1e-3) : Vector3.Multiply(sphereDist, (float)-1e-3);
         }
-        public static Vector3 reflectionOriginCalc(Vector3 refDir, Vector3 sphereDist)
+        public  Vector3 ReflectionOriginCalc(Vector3 refDir, Vector3 sphereDist)
         {
             return Vector3.Dot(refDir, sphereDist) > 0 ? Vector3.Multiply(sphereDist, (float)1e-3) : Vector3.Multiply(sphereDist, (float)-1e-3);
         }
-        //public static Vector3 cast_ray(Vector3 orig, ref Vector3 dir, List<Sphere> spheres, List<Light> lights)
         //added reflection recursive depth limition
-        public static Vector3 cast_ray(Vector3 orig, ref Vector3 dir, List<Sphere> spheres, List<LightEntity> lights, uint depth = 0)
+        public  Vector3 cast_ray(Vector3 orig, ref Vector3 dir, List<Sphere> spheres, List<LightEntity> lights, uint depth = 0)
         {
             Vector3 point = new Vector3(0.0f, 0.0f, 0.0f);
             Vector3 N = new Vector3(0f, 0f, 0f);
-            Material material = new Material();
+            Material Material = new Material();
 
             Vector3 result;
 
-            //if (depth>2 || !scene_intersect(orig, dir, spheres, ref point, ref N, ref material))
-            if (!scene_intersect(orig, dir, spheres, ref point, ref N, ref material))
+            //if (depth>2 || !scene_intersect(orig, dir, spheres, ref point, ref N, ref Material))
+            if (!scene_intersect(orig, dir, spheres, ref point, ref N, ref Material))
             {
                 return result = new Vector3(0.4f, 0.4f, 0.4f);
             }
@@ -67,7 +65,7 @@ namespace TheRender.Services
             Material shadowMat = new Material();
             //reflection
             Vector3 reflectionDir = ReflectRayByPhong(dir, N);
-            Vector3 reflectionOrigin = point + reflectionOriginCalc(reflectionDir, N);
+            Vector3 reflectionOrigin = point + ReflectionOriginCalc(reflectionDir, N);
             //Vector3 reflectionColor = cast_ray(reflectionOrigin, ref reflectionDir, spheres, lights, depth + 1);
 
             for (int i = 0; i < lights.Count; i++)
@@ -78,7 +76,7 @@ namespace TheRender.Services
                 light_dir = Vector3.Normalize(light_dir);
 
                 //shadows
-                shadowOrigin = point + shadowOriginDeltaCalc(light_dir, N);
+                shadowOrigin = point + ShadowOriginDeltaCalc(light_dir, N);
                 if (scene_intersect(shadowOrigin, light_dir, spheres, ref shadowPoint, ref shadowNorm, ref shadowMat) && (shadowPoint - shadowOrigin).Length() < light_dist)
                 {
                     continue;
@@ -92,41 +90,22 @@ namespace TheRender.Services
                 diffuse_light_intensity += lights[i].Intensity * Math.Abs(Vector3.Dot(light_dir, N)) / (float)Math.Pow(light_dist, 2);
                 var refl = ReflectRayByPhong(light_dir, N);
                 var spec = -1f * Vector3.Dot(refl, dir);
-                var specComplete = Math.Pow(Math.Max(0f, spec), material.Specular_exponent) * Math.Abs(Vector3.Dot(light_dir, N)) / (float)Math.Pow(light_dist, 2);
+                var specComplete = Math.Pow(Math.Max(0f, spec), Material.SpecularExponent) * Math.Abs(Vector3.Dot(light_dir, N)) / (float)Math.Pow(light_dist, 2);
                 specular_light_intensity += specComplete * lights[i].Intensity;
             }
-            var diffuseComponent = Vector3.Multiply(Vector3.Multiply(material.Diffuse_color, (float)diffuse_light_intensity), material.Albedo.X);
-            var specularComponent = Vector3.Multiply(new Vector3(1f, 1f, 1f), (float)specular_light_intensity * material.Albedo.Y);
+            var diffuseComponent = Vector3.Multiply(Vector3.Multiply(Material.DiffuseColor, (float)diffuse_light_intensity), Material.Albedo.X);
+            var specularComponent = Vector3.Multiply(new Vector3(1f, 1f, 1f), (float)specular_light_intensity * Material.Albedo.Y);
             //return diffuseComponent + specularComponent + reflectiveComponent;
             return diffuseComponent + specularComponent;
         }
-        public static Vector3 castDepthRay(Vector3 orig, ref Vector3 dir, List<Sphere> spheres)
-        {
-            Vector3 res = new Vector3();
-            Vector3 point = new Vector3(0.0f, 0.0f, 0.0f);
-            Vector3 N = new Vector3(0f, 0f, 0f);
-            Material material = new Material();
-            float dist;
 
-            if (!scene_intersect(orig, dir, spheres, ref point, ref N, ref material))
-            {
-                return res = new Vector3(0f, 0f, 1f);
-            }
-
-            dist = Vector3.Distance(orig, point);
-            res = new Vector3(1f / dist, 1f / dist, 1f / dist);
-            return res;
-        }
-
-        //Create colors array
-        //public static List<Illuminance> generateColors()
-        public static void generateColors()
+        public  void generateColors()    //Create colors array
         {
             //create the scene
-            Scene world = new Scene();
+            SceneEntity world = new SceneEntity();
             //List<Illuminance> illuminances = new List<Illuminance>();
             double fov = world.FOV;
-            int win_w = world.Width, win_h = world.Height;
+            int win_w = world.WinWidth, win_h = world.WinHeight;
             //pseudo-coords
             double dir_x = world.X, dir_y = world.Y, dir_z = world.Z;
             //rendering vars
@@ -155,9 +134,6 @@ namespace TheRender.Services
 
                     res_color = TracerService.cast_ray(origin, ref norm_dir, world.Spheres, world.Lights);  //COLOR
                     color_buf.Add(res_color);
-
-                    res_color = TracerService.castDepthRay(origin, ref norm_dir, world.Spheres);   //LIDAR
-                    monochrome_buf.Add(res_color);
                 }
             }
             float max;

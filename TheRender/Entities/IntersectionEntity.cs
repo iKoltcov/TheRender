@@ -3,7 +3,7 @@ using  System;
 
 namespace TheRender.Entities
 {
-    public class Intersection
+    public class IntersectionEntity
     {
         public uint Hits { get; set; }
         public double Distance { get; set; }
@@ -11,7 +11,7 @@ namespace TheRender.Entities
         public Vector3 FaceNormal { get; set; }
         public Material Material { get; set; }
 
-        public Intersection(Vector3 cam)
+        public IntersectionEntity(Vector3 cam)
         {
             Hits = 0;
             Distance = Double.MaxValue;
@@ -19,16 +19,5 @@ namespace TheRender.Entities
             FaceNormal = new Vector3();
             Material = new Material();
         }
-        /*
-         //not sure if needed at all
-        public Intersection (bool hitFlag, double dst, Vector3 pointOfIntersection, Vector3 normalToFace, Material mat)
-        {
-            hit = hitFlag;
-            distance = dst;
-            IntersectionCoordinate = pointOfIntersection;
-            FaceNormal = normalToFace;
-            material = mat;
-        }
-        */
     }
 }

@@ -6,7 +6,7 @@ namespace TheRender.Services
     public class IntersectionService
     {
         protected void IntersectionDistanceTest(Vector3 Origin, Vector3 PlaneIntersectionPoint, GeometryEntity Geometry,
-            ref Intersection IntersectionPoint)
+            ref IntersectionEntity IntersectionPoint)
         {
             var Dist = (Origin - PlaneIntersectionPoint).Length();
             if (Dist < IntersectionPoint.Distance)
@@ -61,7 +61,7 @@ namespace TheRender.Services
             return false;
         }
         
-        public bool PlaneIntersectionTest (Vector3 A, Vector3 B, Vector3 C, Vector3 Origin, Vector3 Direction, GeometryEntity geometryIntersected, ref Intersection IntersectionPoint)
+        public bool PlaneIntersectionTest (Vector3 A, Vector3 B, Vector3 C, Vector3 Origin, Vector3 Direction, GeometryEntity geometryIntersected, ref IntersectionEntity IntersectionPoint)
         {
             Vector3 res, normal, viewRay, ray;
             double e, d;

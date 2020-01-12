@@ -13,8 +13,6 @@ namespace TheRender.Entities
         public float Radius { get; set; }
 
         public MaterialEntity Material { get; set; }
-
-        public List<Sector> Wireframe { get; set; }
         
         public Vector3? CheckCollision(RayEntity ray)
         {
@@ -55,20 +53,6 @@ namespace TheRender.Entities
             return (intersect - Position).Normalize();
         }
         
-        private void createWireframe()
-        {
-            float cir_len = (float)Math.PI * 2.0f * Radius;
-            float theta_stp = 2 * Radius / (float)160;
-            float phi_stp = cir_len / (float)40;    //phi - vertical layout
-            Sector tmp = new Sector();
-            for (float theta = -Radius; theta < Radius; theta += theta_stp)  //creating wireframe
-            {
-                for (float phi = 0; phi < 2.0 * Math.PI; phi += phi_stp)
-                {
-                    tmp = new Sector(Radius, Position, theta, phi, theta_stp, phi_stp);// ЗАМЕНИТЬ КОНСТРУКТОР НА МЕТОД ИЛИ ВООБЩЕ ВЫНЕСТИ В СТАТИК!
-                    Wireframe.Add(tmp);
-                }
-            }
-        }
+        
     }
 }
