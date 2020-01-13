@@ -81,6 +81,9 @@ namespace TheRender.Services
                 if (BaricTest(A, B, C, res))
                 {
                     IntersectionDistanceTest(Origin, res, geometryIntersected,  IntersectionPoint);
+                    IntersectionPoint.FaceNormal = normal;
+                    IntersectionPoint.Distance = (Origin - res).Length();
+                    IntersectionPoint.NormalizedViewDirection = Vector3.Normalize(res);
                     return true;
                 }
             }

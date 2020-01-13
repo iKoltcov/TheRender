@@ -10,7 +10,7 @@ namespace TheRender.Services
         {
             
         }
-        private void IntersectionCheck(SceneEntity world, IntersectionEntity screenCell, Vector3 rayCasted)
+        private void IntersectionCheck(SceneEntity world, IntersectionEntity screenCell, Vector3 rayCasted, uint camRayIndex)
         {
             for (int i = 0; i < world.Geometries.Count; i++)
             {
@@ -21,7 +21,7 @@ namespace TheRender.Services
                     var planeHit = new IntersectionService();
                     if (planeHit.PlaneIntersectionTest(sector.TopLeft, sector.TopRight, sector.Bottom, world.Cam, rayCasted, geometry, screenCell))
                     {
-                        screenCell.Hits++;
+                        screenCell.Hits=camRayIndex+1;
                         break;    //choose next geometry from the list (searchin' for the closest)
                     }
                 }
@@ -31,7 +31,7 @@ namespace TheRender.Services
         {
             Vector3 rayDirection;
             float DirectionX, DirectionY, DirectionZ;    //view direction
-            for(int k=0;k<bunchOfRays;k++)
+            for(uint k=0;k<bunchOfRays;k++)
             {
                 for (int j = 0; j < world.WinHeight; j++)
                 {
@@ -42,7 +42,7 @@ namespace TheRender.Services
                         DirectionZ = (float) (-world.WinHeight / (2f * Math.Tan(world.FOV / 2f)));
                         rayDirection = new Vector3(DirectionX,DirectionY,DirectionZ);
                         Vector3.Normalize(rayDirection);
-                        IntersectionCheck(world,world.PixelsHandler[j,i],rayDirection);
+                        IntersectionCheck(world,world.PixelsHandler[j,i],rayDirection, k);
                     }
                 }
             }
