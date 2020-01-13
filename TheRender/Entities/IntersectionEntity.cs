@@ -10,6 +10,7 @@ namespace TheRender.Entities
         public Vector3 IntersectionCoordinate { get; set; }
         public Vector3 FaceNormal { get; set; }
         public Material Material { get; set; }
+        public Vector3 Color { get; set; }
 
         public IntersectionEntity(Vector3 cam)
         {
@@ -18,6 +19,7 @@ namespace TheRender.Entities
             IntersectionCoordinate = cam;
             FaceNormal = new Vector3();
             Material = new Material();
+            Color = new Vector3(0.4f,0.4f,0.4f);
         }
     }
 }

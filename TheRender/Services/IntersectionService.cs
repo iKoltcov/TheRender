@@ -5,8 +5,9 @@ namespace TheRender.Services
 {
     public class IntersectionService
     {
+        public bool PlaneHit;
         protected void IntersectionDistanceTest(Vector3 Origin, Vector3 PlaneIntersectionPoint, GeometryEntity Geometry,
-            ref IntersectionEntity IntersectionPoint)
+             IntersectionEntity IntersectionPoint)
         {
             var Dist = (Origin - PlaneIntersectionPoint).Length();
             if (Dist < IntersectionPoint.Distance)
@@ -61,7 +62,7 @@ namespace TheRender.Services
             return false;
         }
         
-        public bool PlaneIntersectionTest (Vector3 A, Vector3 B, Vector3 C, Vector3 Origin, Vector3 Direction, GeometryEntity geometryIntersected, ref IntersectionEntity IntersectionPoint)
+        public bool PlaneIntersectionTest (Vector3 A, Vector3 B, Vector3 C, Vector3 Origin, Vector3 Direction, GeometryEntity geometryIntersected,  IntersectionEntity IntersectionPoint)
         {
             Vector3 res, normal, viewRay, ray;
             double e, d;
@@ -79,12 +80,17 @@ namespace TheRender.Services
                     (float)(Origin.Z + ray.Z * d / e));
                 if (BaricTest(A, B, C, res))
                 {
-                    IntersectionDistanceTest(Origin, res, geometryIntersected, ref IntersectionPoint);
+                    IntersectionDistanceTest(Origin, res, geometryIntersected,  IntersectionPoint);
                     return true;
                 }
             }
 
             return false;
+        }
+
+        public IntersectionService()
+        {
+            PlaneHit = false;
         }
     }
 }
