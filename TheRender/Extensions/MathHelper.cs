@@ -1,5 +1,7 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
 using TheRender.Entities;
+using TheRender.Results;
 
 namespace TheRender.Extensions
 {
@@ -14,22 +16,36 @@ namespace TheRender.Extensions
             return vector - normal * 2.0f * Vector3.Dot(vector, normal);
         }
         
-        public static Vector3? IntersectTriangle(this RayEntity rayEntity, Vector3 vertexA, Vector3 vertexB, Vector3 vertexC, Vector3 normal) 
+        public static IntersectTriangleResult? IntersectTriangle(this RayEntity rayEntity, Vector3 vertexA, Vector3 vertexB, Vector3 vertexC, Vector3 normal) 
         {
-            var d = -normal.X * vertexA.X - normal.Y * vertexA.Y - normal.Z * vertexA.Z;
-            var a = (Vector3.Dot(rayEntity.Origin, normal) - d) / Vector3.Dot(rayEntity.Direction, normal);
-            if (a < 0)
+            var denom = Vector3.Dot(rayEntity.Direction, normal);
+            if (Math.Abs(denom) < double.Epsilon)
+            {
+                return null;
+            }
+            var t = -(Vector3.Dot(vertexA, -normal) + Vector3.Dot(rayEntity.Origin, normal)) / denom;
+            
+            if (t < 0)
             {
                 return null;
             }
 
-            var point = rayEntity.Origin + rayEntity.Direction * a;
+            var point = rayEntity.Origin + rayEntity.Direction * t;
             if(point.IntersectTriangle(vertexA, vertexB, vertexC))
             {
-                return point;
+                return new IntersectTriangleResult()
+                {
+                    Point = point,
+                    Distance = t,
+                };
             }
 
             return null;
+        }
+
+        public static IntersectTriangleResult? IntersectTriangle(this RayEntity rayEntity, TriangleEntity polygon)
+        {
+            return rayEntity.IntersectTriangle(polygon.VertexA, polygon.VertexB, polygon.VertexC, polygon.Normal);
         }
         
         private static bool IntersectTriangle(this Vector3 point, Vector3 vertexA, Vector3 vertexB, Vector3 vertexC)
@@ -46,7 +62,8 @@ namespace TheRender.Extensions
 
             var invDenom = 1.0f / (dot00 * dot11 - dot01 * dot01);
             var u = (dot11 * dot02 - dot01 * dot12) * invDenom;
-            if (u < 0) {
+            if (u <= 0) 
+            {
                 return false;
             }
 

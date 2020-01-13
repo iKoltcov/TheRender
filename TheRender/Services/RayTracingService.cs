@@ -26,6 +26,7 @@ namespace TheRender.Services
         private readonly float epsilon = 1e-3f;
         
         private readonly ColorEntity backgroundColor = new ColorEntity(0.0f, 0.6f, 0.9f); 
+        private readonly ColorEntity defaultColor = new ColorEntity(0.3f, 0.3f, 0.3f); 
 
         private readonly List<IEssence> essences;
         private readonly List<ILight> lights;
@@ -44,7 +45,7 @@ namespace TheRender.Services
                 {
                     pixels[widthIterator, heightIterator] = new PixelEntity()
                     {
-                        Color = backgroundColor,
+                        Color = defaultColor,
                         AccumulationColors = new Vector3(),
                         CountAccumulations = 0
                     };
@@ -90,10 +91,23 @@ namespace TheRender.Services
         {
             try
             {
+                var minX = (int) stepSize * taskNumber;
+                var maxX = (int) stepSize * (taskNumber + 1);
+                var minY = 0;
+                var maxY = height;
+
+                var cellIterator = 0;
+                
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    var x = Random.Next((int) stepSize * taskNumber, (int) stepSize * (taskNumber + 1));
-                    var y = Random.Next(0, height);
+                    var x = cellIterator % (maxX - minX) + minX;
+                    var y = cellIterator / (maxX - minX);
+
+                    if (++cellIterator >= (maxX - minX) * (maxY - minY))
+                    {
+                        cellIterator = 0;
+                    }
+                    
                     var offsetX = (float) Random.NextDouble();
                     var offsetY = (float) Random.NextDouble();
                     var direction = new Vector3(
@@ -132,71 +146,74 @@ namespace TheRender.Services
             
             var intersect = SceneIntersect(rayEntity);
 
-            if(intersect == null)
+            if(intersect?.Collision == null)
             {
                 return backgroundColor;
             }
 
             var diffuseLightIntensity = 0.0f;
             var specularLightIntensity = 0.0f;
-            var normal = intersect.Essence.GetNormal(intersect.Point);
             
             foreach(var light in lights)
             {
-                var vectorToLight = light.Position - intersect.Point;
+                var vectorToLight = light.Position - intersect.Collision.Point;
                 var directionToLight = vectorToLight.Normalize();
                 var distanceToLight = vectorToLight.Length();
 
                 var rayToLight = new RayEntity()
                 {
-                    Origin = Vector3.Dot(directionToLight, normal) < 0 
-                        ? intersect.Point - directionToLight * epsilon
-                        : intersect.Point + directionToLight * epsilon,
+                    Origin = Vector3.Dot(directionToLight, intersect.Collision.Normal) < 0 
+                        ? intersect.Collision.Point - directionToLight * epsilon
+                        : intersect.Collision.Point + directionToLight * epsilon,
                     Direction = directionToLight
                 };
+
+                var castRayToLight = SceneIntersect(rayToLight, distanceToLight);
                 
-                if(SceneIntersect(rayToLight, distanceToLight) == null)
+                if(castRayToLight?.Collision == null)
                 {
-                    diffuseLightIntensity += (light.Intensity / distanceToLight * distanceToLight) * Math.Max(0.0f, Vector3.Dot(directionToLight, normal));
-                    specularLightIntensity += (float)Math.Pow(Math.Max(0.0f, -Vector3.Dot((-directionToLight).Reflect(normal), rayEntity.Direction)), intersect.Essence.Material.Specular) * light.Intensity;
+                    diffuseLightIntensity += (light.Intensity / distanceToLight * distanceToLight) * Math.Max(0.0f, Vector3.Dot(directionToLight, intersect.Collision.Normal));
+                    specularLightIntensity += (float)Math.Pow(Math.Max(0.0f, -Vector3.Dot((-directionToLight).Reflect(intersect.Collision.Normal), rayEntity.Direction)), intersect.Essence.Material.Specular) * light.Intensity;
                 }
             }
 
             var reflectColor = new ColorEntity(0.0f, 0.0f, 0.0f);
             if (intersect.Essence.Material.ReflectComponent > 0.0f)
             {
-                var reflectDirection = rayEntity.Direction.Reflect(normal).Normalize();
+                var reflectDirection = rayEntity.Direction.Reflect(intersect.Collision.Normal).Normalize();
                 var reflectionRay = new RayEntity()
                 {
-                    Origin = Vector3.Dot(reflectDirection, normal) < 0 
-                        ? intersect.Point - normal * epsilon
-                        : intersect.Point + normal * epsilon,
+                    Origin = Vector3.Dot(reflectDirection, intersect.Collision.Normal) < 0 
+                        ? intersect.Collision.Point - intersect.Collision.Normal * epsilon
+                        : intersect.Collision.Point + intersect.Collision.Normal * epsilon,
                     Direction = reflectDirection
                 };
                 reflectColor = CastRay(reflectionRay, depth + 1);
             }
+            
+            var result = intersect.Essence.Material.Color * diffuseLightIntensity * intersect.Essence.Material.DiffuseComponent 
+                         + new ColorEntity(1.0f, 1.0f, 1.0f) * specularLightIntensity * intersect.Essence.Material.SpecularComponent
+                         + reflectColor * intersect.Essence.Material.ReflectComponent;
 
-            return intersect.Essence.Material.Color * diffuseLightIntensity * intersect.Essence.Material.DiffuseComponent 
-                + new ColorEntity(1.0f, 1.0f, 1.0f) * specularLightIntensity * intersect.Essence.Material.SpecularComponent
-                + reflectColor * intersect.Essence.Material.ReflectComponent;
+            return result;
         }
 
         private SceneIntersectResult SceneIntersect(RayEntity rayEntity, float? distanceMax = null)
         {
-            Vector3? point = null;
+            CollisionResult collisionRef = null;
             float? distanceMin = null;
             IEssence essenceRef = null;
 
             foreach (var essence in essences)
             {
-                var collisionPoint = essence.CheckCollision(rayEntity);
+                var collision = essence.CheckCollision(rayEntity);
 
-                if (!collisionPoint.HasValue)
+                if (collision == null)
                 {
                     continue;
                 }
                 
-                var distance = (rayEntity.Origin - collisionPoint.Value).Length();
+                var distance = (rayEntity.Origin - collision.Point).Length();
                 if (distanceMax != null && distanceMax < distance)
                 {
                     continue;
@@ -206,7 +223,7 @@ namespace TheRender.Services
                 {
                     distanceMin = distance;
                     essenceRef = essence;
-                    point = collisionPoint;
+                    collisionRef = collision;
                 }
             }
 
@@ -218,7 +235,7 @@ namespace TheRender.Services
             return new SceneIntersectResult()
             {
                 Essence = essenceRef,
-                Point = point.Value
+                Collision = collisionRef
             };
         }
 
