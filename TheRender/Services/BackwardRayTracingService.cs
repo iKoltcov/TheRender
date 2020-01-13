@@ -1,15 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using TheRender.Entities;
 using System.Numerics;
+
 namespace TheRender.Services
 {
     public class BackwardRayTracingService
     {
+        private IntersectionService IntersectionService { get; }
+        
         public BackwardRayTracingService()
         {
-            
+            IntersectionService = new IntersectionService();        
         }
+        
         private void IntersectionCheck(SceneEntity world, IntersectionEntity screenCell, Vector3 rayCasted, uint camRayIndex)
         {
             for (int i = 0; i < world.Geometries.Count; i++)
@@ -18,8 +21,7 @@ namespace TheRender.Services
                 for (int j = 0; j < geometry.Wireframe.Count; j++)    //parsin' array of geometry's sectors
                 {
                     var sector = geometry.Wireframe[i];
-                    var planeHit = new IntersectionService();
-                    if (planeHit.PlaneIntersectionTest(sector.TopLeft, sector.TopRight, sector.Bottom, world.Cam, rayCasted, geometry, screenCell))
+                    if (IntersectionService.PlaneIntersectionTest(sector.TopLeft, sector.TopRight, sector.Bottom, world.Cam, rayCasted, geometry, screenCell))
                     {
                         screenCell.Hits=camRayIndex+1;
                         break;    //choose next geometry from the list (searchin' for the closest)

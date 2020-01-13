@@ -13,8 +13,8 @@ namespace TheRender.OpenTK
     public class Window : GameWindow
     {
         private readonly int countTask = 4;
-        private readonly int cellWidth = 1024;
-        private readonly int cellHeight = 768;
+        private readonly int cellWidth = 512;
+        private readonly int cellHeight = 512;
 
         private readonly int vertexSize = 2;
         private readonly int colorSize = 3;
@@ -30,7 +30,7 @@ namespace TheRender.OpenTK
         private float[] arrayVertexs;
         private float[] arrayColors;
 
-        public Window() : base(1024, 768, GraphicsMode.Default, "TheRender")
+        public Window() : base(512, 512, GraphicsMode.Default, "TheRender")
         {
             rayTracingService = new RayTracingService(cellWidth, cellHeight, countTask);
             rayTracingService.AddDefaultScene();

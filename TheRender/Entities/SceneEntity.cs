@@ -35,7 +35,7 @@ namespace TheRender.Entities
                     direction.Z = (float) (-WinHeight / (2f * Math.Tan(FOV / 2f)));
 
                     norm_dir = Vector3.Normalize(direction);
-                    res_color = TracerService.cast_ray(origin, ref norm_dir, SpheresCollection, Lights);
+                    //res_color = TracerService.cast_ray(origin, ref norm_dir, SpheresCollection, Lights);
 
                 }
             }
