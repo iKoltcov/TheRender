@@ -1,28 +1,28 @@
 using System.Numerics;
 using TheRender.Entities;
-using TheRender.Entities.Interfaces;
 using TheRender.Services;
+using TheRender.Services.Interfaces;
 
 namespace TheRender.OpenTK.Scenes
 {
     public static class DefaultScene
     {
-        public static RayTracingService AddDefaultScene(this RayTracingService rayTracingService)
+        public static ITraceService AddDefaultScene(this ITraceService traceService)
         {
-            rayTracingService.AddLight(new PointLightEntity()
+            traceService.AddLight(new PointLightEntity()
             {
                 Position = new Vector3(0.0f, 50.0f, 0.0f),
                 Intensity = 0.8f,
                 Color = new ColorEntity(1.0f, 1.0f, 1.0f)
             });
-            rayTracingService.AddLight(new PointLightEntity()
+            traceService.AddLight(new PointLightEntity()
             {
                 Position = new Vector3(-20.0f, 50.0f, 100.0f),
                 Intensity = 0.8f,
                 Color = new ColorEntity(1.0f, 1.0f, 1.0f)
             });
-            rayTracingService.AddEssence(new SphereEntity(new Vector3(0.0f, -5.0f, 100.0f), 15.0f));
-            rayTracingService.AddEssence(new QuadEntity(
+            traceService.AddEssence(new SphereEntity(new Vector3(0.0f, -5.0f, 100.0f), 15.0f));
+            traceService.AddEssence(new QuadEntity(
                 new Vector3(0.0f, -20.0f, 0.0f),
                 new[]
                 {
@@ -38,7 +38,7 @@ namespace TheRender.OpenTK.Scenes
                     ReflectComponent = 0.3f,
                 }));
 
-            return rayTracingService;
+            return traceService;
         }
     }
 }

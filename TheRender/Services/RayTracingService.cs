@@ -6,10 +6,11 @@ using TheRender.Entities;
 using TheRender.Entities.Interfaces;
 using TheRender.Extensions;
 using TheRender.Results;
+using TheRender.Services.Interfaces;
 
 namespace TheRender.Services
 {
-    public class RayTracingService : IDisposable
+    public class RayTracingService : ITraceService
     {
         private static readonly Random Random = new Random();
 
