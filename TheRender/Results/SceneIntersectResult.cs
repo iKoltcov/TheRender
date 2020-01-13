@@ -6,6 +6,6 @@ namespace TheRender.Results
     {
         public IEssence Essence { get; set; }
 
-        public CollisionResult Collision { get; set; }
+        public CollisionResult Collision { get; set; } 
     }
 }

@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using TheRender.Entities.Interfaces;
 using TheRender.Extensions;
 using TheRender.Results;
 
-namespace TheRender.Entities.Interfaces
+namespace TheRender.Entities
 {
     public class SphereEntity : IEssence, IGeometry
     {
