@@ -7,6 +7,7 @@ using TheRender.OpenTK.Entities;
 using TheRender.OpenTK.Scenes;
 using TheRender.OpenTK.Services;
 using TheRender.Services;
+using TheRender.Services.Interfaces;
 
 namespace TheRender.OpenTK
 {
@@ -19,7 +20,7 @@ namespace TheRender.OpenTK
         private readonly int vertexSize = 2;
         private readonly int colorSize = 3;
          
-        private readonly RayTracingService rayTracingService;
+        private readonly ITraceService tracingService;
         private readonly ShaderService shaderService;
 
         private Matrix4 matrix;
@@ -32,8 +33,8 @@ namespace TheRender.OpenTK
 
         public Window() : base(512, 512, GraphicsMode.Default, "TheRender")
         {
-            rayTracingService = new RayTracingService(cellWidth, cellHeight, countTask);
-            rayTracingService.AddDefaultScene();
+            tracingService = new RayTracingService(cellWidth, cellHeight, countTask);
+            tracingService.AddDefaultScene();
             
             shaderService = new ShaderService();
 
@@ -44,12 +45,12 @@ namespace TheRender.OpenTK
             vertexBufferHandle = GL.GenBuffer();
 
             UpdateVertexes();
-            UpdateColors(rayTracingService.GetPixels());
+            UpdateColors(tracingService.GetPixels());
         }
 
         public void Start()
         {
-            rayTracingService.Run();
+            tracingService.Run();
             Run(60);
         }
 
@@ -105,7 +106,7 @@ namespace TheRender.OpenTK
         {
             try
             {
-                var pixels = rayTracingService.GetPixels();
+                var pixels = tracingService.GetPixels();
                 var x = (int) (positionX / (Width / (float) cellWidth));
                 var y = (int) (positionY / (Height / (float) cellHeight));
 
@@ -132,13 +133,13 @@ namespace TheRender.OpenTK
         
         protected override void Dispose(bool manual)
         {
-            rayTracingService.Dispose();
+            tracingService.Dispose();
             base.Dispose(manual);
         }
 
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
-            UpdateColors(rayTracingService.GetPixels());
+            UpdateColors(tracingService.GetPixels());
         }
 
         protected override void OnRenderFrame(FrameEventArgs e)
