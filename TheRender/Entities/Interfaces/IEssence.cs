@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+﻿using TheRender.Results;
 
 namespace TheRender.Entities.Interfaces
 {
@@ -6,10 +6,6 @@ namespace TheRender.Entities.Interfaces
     {        
         MaterialEntity Material { get; set; }
         
-        Vector3? CheckCollision(RayEntity ray);
-        
-        Vector3 GetNormal();
-
-        Vector3 GetNormal(Vector3 intersect);
+        CollisionResult CheckCollision(RayEntity ray);
     }
 }

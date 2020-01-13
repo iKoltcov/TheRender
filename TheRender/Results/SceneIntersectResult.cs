@@ -1,5 +1,4 @@
-﻿using System.Numerics;
-using TheRender.Entities.Interfaces;
+﻿using TheRender.Entities.Interfaces;
 
 namespace TheRender.Results
 {
@@ -7,6 +6,6 @@ namespace TheRender.Results
     {
         public IEssence Essence { get; set; }
 
-        public Vector3 Point { get; set; }
+        public CollisionResult Collision { get; set; } 
     }
 }
