@@ -24,7 +24,7 @@ namespace TheRender.Entities
             Radius = radius;
             
             var triangles = new List<TriangleEntity>();
-            var stackStep = Math.PI * 0.05;
+            var stackStep = Math.PI * 0.1;
             var sectorStep = Math.PI * 0.1;
             
             for(var i = 0; i < 2.0 / stackStep; i++)
