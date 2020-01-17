@@ -6,7 +6,7 @@ namespace TheRender.Services
     public class IntersectionService
     {
         public bool PlaneHit;
-        protected void IntersectionDistanceTest(Vector3 Origin, Vector3 PlaneIntersectionPoint, GeometryEntity Geometry,
+        public bool IntersectionDistanceTest(Vector3 Origin, Vector3 PlaneIntersectionPoint, GeometryEntity Geometry,
              IntersectionEntity IntersectionPoint)
         {
             var Dist = (Origin - PlaneIntersectionPoint).Length();
@@ -15,10 +15,13 @@ namespace TheRender.Services
                 IntersectionPoint.Distance = Dist;
                 IntersectionPoint.Material = Geometry.Material;
                 IntersectionPoint.IntersectionCoordinate = PlaneIntersectionPoint;
+                return true;
             }
+
+            return false;
         }
         
-        protected bool BaricTest(Vector3 A, Vector3 B, Vector3 C, Vector3 IntersectionPoint)
+        public bool BaricTest(Vector3 A, Vector3 B, Vector3 C, Vector3 IntersectionPoint)
         {
             float Side1, Side2, Side3;
             Side1 = (float)Math.Sqrt(Math.Pow(A.X - B.X, 2) + Math.Pow(A.Y - B.Y, 2) + Math.Pow(A.Z - B.Z, 2));
@@ -80,14 +83,19 @@ namespace TheRender.Services
                     (float)(Origin.Z + ray.Z * d / e));
                 if (BaricTest(A, B, C, res))
                 {
-                    IntersectionDistanceTest(Origin, res, geometryIntersected,  IntersectionPoint);
-                    IntersectionPoint.FaceNormal = normal;
-                    IntersectionPoint.Distance = (Origin - res).Length();
-                    IntersectionPoint.NormalizedViewDirection = Vector3.Normalize(res);
-                    return true;
+                    
+                    
+                    if (IntersectionDistanceTest(Origin, res, geometryIntersected, IntersectionPoint))
+                    {
+                        
+                        IntersectionPoint.FaceNormal = normal;
+                        IntersectionPoint.Distance = (Origin - res).Length();
+                        IntersectionPoint.NormalizedViewDirection = Vector3.Normalize(res);
+                        return true;
+                    }
                 }
             }
-
+        
             return false;
         }
 

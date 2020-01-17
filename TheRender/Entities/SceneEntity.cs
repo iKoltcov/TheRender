@@ -18,7 +18,8 @@ namespace TheRender.Entities
         public int WinWidth, WinHeight;
         public Vector3 Direction { get; set; }
         public  Vector3 Cam { get; set; }
-
+        public int NumOfRays { get; set; }
+        public int NumOfBounces { get; set; }
         public void rayCasting(int WinWidth, int WinHeight)
         {
             Vector3 origin = new Vector3(0, 0, 0);
@@ -44,7 +45,8 @@ namespace TheRender.Entities
         public List<Material> MaterialsCollectionGenerator()
         {
             List<Material> materialsLst = new List<Material>();
-
+            Material background = new Material();
+            materialsLst.Add(background);
             Material ivory = new Material(new Vector3(0.6f, 0.3f, 0.0f), new Vector3(0.4f, 0.4f, 0.3f), 50f);
             materialsLst.Add(ivory);
             Material rubber_green = new Material(new Vector3(0.9f, 0.1f, 0f), new Vector3(0.1f, 0.9f, 0.1f), 10f);
@@ -106,7 +108,8 @@ namespace TheRender.Entities
             FOV = Math.PI / 2f;
             WinWidth = 512;
             WinHeight = 512;
-
+            NumOfRays = 10;
+            NumOfBounces = 10;
             this.Direction = new Vector3();
 
             PixelsHandler = new IntersectionEntity [WinHeight,WinWidth];

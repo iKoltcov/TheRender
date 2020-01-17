@@ -14,7 +14,7 @@ namespace TheRender.Entities
         public Material()
         {
             Albedo = new Vector3(1, 0, 0);
-            DiffuseColor = new Vector3(1f, 1f, 1f);
+            DiffuseColor = new Vector3(0.4f, 0.4f, 0.7f);
             SpecularExponent = 0;
         }
 

@@ -5,12 +5,28 @@ using System.Collections.Generic;
 
 namespace TheRender.Services
 {
-    public class RenderingService
+    public class RayProcessingService
     {
-        public Vector3 ReflectRayByPhong(Vector3 L, Vector3 N)
+        public RayProcessingService()
+        { }
+        public Vector3 ReflectRay(Vector3 L, Vector3 N)
         {
             var res = Vector3.Multiply(N, (float)Vector3.Dot(N, L) * 2f) - L;
             return Vector3.Normalize(res);
+        }
+
+        public Vector3 ReflectRayRandomly(Vector3 vector, Vector3 surfaceNormal)
+        {
+            var rndSeed = new Random();
+            var res = vector;
+            do
+            {
+                res.X *= (float) rndSeed.NextDouble() * 2 - 1;
+                res.Y *= (float) rndSeed.NextDouble() * 2 - 1;
+                res.Z *= (float) rndSeed.NextDouble() * 2 - 1;
+            } while (Vector3.Dot(res,surfaceNormal)<0);
+
+            return res;
         }
         public Vector3 ShadowOriginDeltaCalc(Vector3 lightDir, Vector3 sphereDist) //shift of shadow origin
         {
@@ -39,12 +55,7 @@ namespace TheRender.Services
             //shadows
             Vector3 shadowOrigin = new Vector3();
             Vector3 shadowPoint = new Vector3();
-            // Vector3 shadowNorm = new Vector3();
-            // Material shadowMat = new Material();
-            //reflection
-            // Vector3 reflectionDir = ReflectRayByPhong(normalizedViewDirection, N);
-            // Vector3 reflectionOrigin = point + ReflectionOriginCalc(reflectionDir, N);
-            //Vector3 reflectionColor = cast_ray(reflectionOrigin, ref reflectionDir, geometries, lights, depth + 1);
+            
 
             for (int i = 0; i < world.Lights.Count; i++)
             {
@@ -71,7 +82,7 @@ namespace TheRender.Services
 
                         diffuse_light_intensity += world.Lights[i].Intensity * Math.Abs(Vector3.Dot(lightDirection, pixelIntersected.FaceNormal)) /
                                                    (float) Math.Pow(lightDistance, 2);
-                        var refl = ReflectRayByPhong(lightDirection, pixelIntersected.FaceNormal);
+                        var refl = ReflectRay(lightDirection, pixelIntersected.FaceNormal);
                         var spec = -1f * Vector3.Dot(refl, pixelIntersected.NormalizedViewDirection);
                         var specComplete = Math.Pow(Math.Max(0f, spec), pixelIntersected.Material.SpecularExponent) *
                                            Math.Abs(Vector3.Dot(lightDirection, N)) /

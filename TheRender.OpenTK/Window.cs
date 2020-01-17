@@ -33,7 +33,7 @@ namespace TheRender.OpenTK
 
         public Window() : base(512, 512, GraphicsMode.Default, "TheRender")
         {
-            tracingService = new RayTracingService(cellWidth, cellHeight, countTask);
+            //tracingService = new BackwardRayTracingService(cellWidth, cellHeight, countTask);
             tracingService.AddDefaultScene();
             
             shaderService = new ShaderService();
