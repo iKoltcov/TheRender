@@ -19,7 +19,7 @@ namespace TheRender.Entities
 
         public SphereEntity(Vector3 position, float radius)
         {
-            Material = MaterialEntity.Default;
+            Material = MaterialEntity.Default();
             Position = position;
             Radius = radius;
             

@@ -22,11 +22,11 @@ namespace TheRender.Services
         private readonly PixelEntity[,] pixels;
 
         private readonly float fieldOfView = 1.57f;
-        private readonly int maxDepthReflect = 5;
+        private readonly int maxDepthReflect = 7;
         private readonly float epsilon = 1e-3f;
-        
-        private readonly ColorEntity backgroundColor = new ColorEntity(0.0f, 0.6f, 0.9f); 
-        private readonly ColorEntity defaultColor = new ColorEntity(0.3f, 0.3f, 0.3f); 
+
+        private readonly ColorEntity backgroundColor = new ColorEntity(0.0f, 0.6f, 0.9f);
+        private readonly ColorEntity defaultColor = new ColorEntity(0.3f, 0.3f, 0.3f);
 
         private readonly List<IEssence> essences;
         private readonly List<ILight> lights;
@@ -40,7 +40,8 @@ namespace TheRender.Services
             pixels = new PixelEntity[width, height];
             cancellationTokenSource = new CancellationTokenSource();
 
-            for (var widthIterator = 0; widthIterator < width; widthIterator++) {
+            for (var widthIterator = 0; widthIterator < width; widthIterator++)
+            {
                 for (var heightIterator = 0; heightIterator < height; heightIterator++)
                 {
                     pixels[widthIterator, heightIterator] = new PixelEntity()
@@ -56,7 +57,7 @@ namespace TheRender.Services
             lights = new List<ILight>();
         }
 
-        public void AddLight(ILight light) 
+        public void AddLight(ILight light)
         {
             lights.Add(light);
         }
@@ -72,13 +73,13 @@ namespace TheRender.Services
             {
                 throw new NullReferenceException("Pixel array not initialized");
             }
-            
+
             return pixels;
         }
 
         public void Run()
-        {            
-            var stepSize = width / (float)countTask;
+        {
+            var stepSize = width / (float) countTask;
             for (var taskIterator = 0; taskIterator < countTask; taskIterator++)
             {
                 var iterator = taskIterator;
@@ -97,7 +98,7 @@ namespace TheRender.Services
                 var maxY = height;
 
                 var cellIterator = 0;
-                
+
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     var x = cellIterator % (maxX - minX) + minX;
@@ -107,7 +108,7 @@ namespace TheRender.Services
                     {
                         cellIterator = 0;
                     }
-                    
+
                     var offsetX = (float) Random.NextDouble();
                     var offsetY = (float) Random.NextDouble();
                     var direction = new Vector3(
@@ -119,8 +120,8 @@ namespace TheRender.Services
                     var color = CastRay(new RayEntity()
                     {
                         Origin = new Vector3(0.0f, 0.0f, 0.0f),
-                        Direction = direction
-                    });
+                        Direction = direction,
+                    }) ?? backgroundColor;
 
                     lock (lockObject)
                     {
@@ -129,6 +130,7 @@ namespace TheRender.Services
                         pixel.Color = new ColorEntity(pixel.AccumulationColors / ++pixel.CountAccumulations);
                     }
                 }
+
                 Console.WriteLine($"{taskNumber} thread stops");
             }
             catch (Exception exception)
@@ -143,18 +145,18 @@ namespace TheRender.Services
             {
                 return backgroundColor;
             }
-            
+
             var intersect = SceneIntersect(rayEntity);
 
-            if(intersect?.Collision == null)
+            if (intersect?.Collision == null)
             {
                 return backgroundColor;
             }
 
             var diffuseLightIntensity = 0.0f;
             var specularLightIntensity = 0.0f;
-            
-            foreach(var light in lights)
+
+            foreach (var light in lights)
             {
                 var vectorToLight = light.Position - intersect.Collision.Point;
                 var directionToLight = vectorToLight.Normalize();
@@ -162,40 +164,65 @@ namespace TheRender.Services
 
                 var rayToLight = new RayEntity()
                 {
-                    Origin = Vector3.Dot(directionToLight, intersect.Collision.Normal) < 0 
+                    Origin = Vector3.Dot(directionToLight, intersect.Collision.Normal) < 0
                         ? intersect.Collision.Point - directionToLight * epsilon
                         : intersect.Collision.Point + directionToLight * epsilon,
                     Direction = directionToLight
                 };
 
                 var castRayToLight = SceneIntersect(rayToLight, distanceToLight);
-                
-                if(castRayToLight?.Collision == null)
+
+                if (castRayToLight?.Collision == null)
                 {
-                    diffuseLightIntensity += (light.Intensity / distanceToLight * distanceToLight) * Math.Max(0.0f, Vector3.Dot(directionToLight, intersect.Collision.Normal));
-                    specularLightIntensity += (float)Math.Pow(Math.Max(0.0f, -Vector3.Dot((-directionToLight).Reflect(intersect.Collision.Normal), rayEntity.Direction)), intersect.Essence.Material.Specular) * light.Intensity;
+                    diffuseLightIntensity += (light.Intensity / distanceToLight * distanceToLight) *
+                                             Math.Max(0.0f, Vector3.Dot(directionToLight, intersect.Collision.Normal));
+                    specularLightIntensity +=
+                        (float) Math.Pow(
+                            Math.Max(0.0f,
+                                -Vector3.Dot((-directionToLight).Reflect(intersect.Collision.Normal),
+                                    rayEntity.Direction)), intersect.Essence.Material.SpecularIntensity) *
+                        light.Intensity;
                 }
             }
 
-            var reflectColor = new ColorEntity(0.0f, 0.0f, 0.0f);
-            if (intersect.Essence.Material.ReflectComponent > 0.0f)
+            var indirectIllumination = new ColorEntity(0.0f, 0.0f, 0.0f);
+            double eventRandom = Random.NextDouble();
+
+            if (eventRandom <= intersect.Essence.Material.SpecularReflectComponent)
             {
                 var reflectDirection = rayEntity.Direction.Reflect(intersect.Collision.Normal).Normalize();
                 var reflectionRay = new RayEntity()
                 {
-                    Origin = Vector3.Dot(reflectDirection, intersect.Collision.Normal) < 0 
+                    Origin = Vector3.Dot(reflectDirection, intersect.Collision.Normal) < 0
                         ? intersect.Collision.Point - intersect.Collision.Normal * epsilon
                         : intersect.Collision.Point + intersect.Collision.Normal * epsilon,
-                    Direction = reflectDirection
+                    Direction = reflectDirection,
                 };
-                reflectColor = CastRay(reflectionRay, depth + 1);
+                indirectIllumination = CastRay(reflectionRay, depth + 1);
             }
-            
-            var result = intersect.Essence.Material.Color * diffuseLightIntensity * intersect.Essence.Material.DiffuseComponent 
-                         + new ColorEntity(1.0f, 1.0f, 1.0f) * specularLightIntensity * intersect.Essence.Material.SpecularComponent
-                         + reflectColor * intersect.Essence.Material.ReflectComponent;
+            else
+            if (eventRandom <= intersect.Essence.Material.SpecularReflectComponent + intersect.Essence.Material.DiffuseReflectComponent)
+            {
+                var diffuseReflectionDirection = MathHelper.DiffuseReflect(intersect.Collision.Normal);
+                var reflectionRay = new RayEntity()
+                {
+                    Origin = Vector3.Dot(diffuseReflectionDirection, intersect.Collision.Normal) < 0 
+                        ? intersect.Collision.Point - intersect.Collision.Normal * epsilon
+                        : intersect.Collision.Point + intersect.Collision.Normal * epsilon,
+                    Direction = diffuseReflectionDirection,
+                };
+                indirectIllumination = CastRay(reflectionRay, depth + 1);
+            }
 
-            return result;
+            if (indirectIllumination == null)
+            {
+                return intersect.Essence.Material.Color * diffuseLightIntensity * intersect.Essence.Material.Diffuse
+                       + ColorEntity.White * specularLightIntensity * intersect.Essence.Material.Specular;
+            }
+
+            return (intersect.Essence.Material.Color * diffuseLightIntensity * intersect.Essence.Material.Diffuse
+                    + ColorEntity.White * specularLightIntensity * intersect.Essence.Material.Specular
+                    + indirectIllumination) * 0.5f;
         }
 
         private SceneIntersectResult SceneIntersect(RayEntity rayEntity, float? distanceMax = null)
@@ -212,7 +239,7 @@ namespace TheRender.Services
                 {
                     continue;
                 }
-                
+
                 var distance = (rayEntity.Origin - collision.Point).Length();
                 if (distanceMax != null && distanceMax < distance)
                 {

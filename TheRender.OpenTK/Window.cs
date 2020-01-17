@@ -12,7 +12,7 @@ namespace TheRender.OpenTK
 {
     public class Window : GameWindow
     {
-        private readonly int countTask = 4;
+        private readonly int countTask = 2;
         private readonly int cellWidth = 1024;
         private readonly int cellHeight = 768;
 

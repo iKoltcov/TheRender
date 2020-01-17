@@ -7,6 +7,8 @@ namespace TheRender.Extensions
 {
     public static class MathHelper
     {
+        private static readonly Random Random = new Random();
+        
         public static Vector3 Normalize(this Vector3 vector)
         {
             return Vector3.Normalize(vector);
@@ -14,6 +16,20 @@ namespace TheRender.Extensions
         
         public static Vector3 Reflect(this Vector3 vector, Vector3 normal) {
             return vector - normal * 2.0f * Vector3.Dot(vector, normal);
+        }
+        
+        public static Vector3 DiffuseReflect(Vector3 normal) {
+            double h = 2.0 * Random.NextDouble() - 1.0;
+            double angleTh = Math.Asin(h);
+            double angleFi = Random.NextDouble() * Math.PI * 2.0;
+
+            var direction = new Vector3(
+                (float)(Math.Cos(angleTh) * Math.Cos(angleFi)),
+                (float)(Math.Cos(angleTh) * Math.Sin(angleFi)),
+                (float)Math.Sin(angleTh));
+            direction += normal;
+            
+            return direction.Normalize();
         }
         
         public static IntersectTriangleResult? IntersectTriangle(this RayEntity rayEntity, Vector3 vertexA, Vector3 vertexB, Vector3 vertexC, Vector3 normal) 

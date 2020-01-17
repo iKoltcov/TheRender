@@ -4,30 +4,45 @@
     {
         public ColorEntity Color { get; set; }
 
+        public float SpecularIntensity { get; set; }
+        
+        public float Diffuse { get; set; }
+        
         public float Specular { get; set; }
-        
-        public float DiffuseComponent { get; set; }
-        
-        public float SpecularComponent { get; set; }
 
-        public float ReflectComponent { get; set; }
+        public float SpecularReflectComponent { get; set; }
+        
+        public float DiffuseReflectComponent { get; set; }
 
-        public static MaterialEntity Default => new MaterialEntity()
+        public static MaterialEntity Default()
         {
-            Color = ColorEntity.Random(),
-            DiffuseComponent = 0.9f,
-            SpecularComponent = 0.1f,
-            ReflectComponent = 0.0f,
-            Specular = 50.0f
-        };
+            return new MaterialEntity()
+            {
+                Color = ColorEntity.Random(),
+                Diffuse = 0.9f,
+                Specular = 0.1f,
+                SpecularIntensity = 50.0f,
+                SpecularReflectComponent = 0.0f,
+                DiffuseReflectComponent = 0.3f,
+            };
+        }
+
+        public static MaterialEntity Default(ColorEntity colorEntity)
+        {
+            var defaultMaterial = Default();
+            defaultMaterial.Color = colorEntity;
+
+            return defaultMaterial;
+        }
 
         public static MaterialEntity Mirror => new MaterialEntity()
         {
             Color = ColorEntity.White,
-            DiffuseComponent = 0.1f,
-            SpecularComponent = 0.1f,
-            ReflectComponent = 0.8f,
-            Specular = 50.0f
+            Diffuse = 0.1f,
+            Specular = 0.1f,
+            SpecularIntensity = 50.0f,
+            SpecularReflectComponent = 1.0f,
+            DiffuseReflectComponent = 0.0f,
         };
     }
 }

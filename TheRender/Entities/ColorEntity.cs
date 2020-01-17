@@ -33,6 +33,7 @@ namespace TheRender.Entities
         public static ColorEntity Red => new ColorEntity(1.0f, 0.0f, 0.0f);
         public static ColorEntity Green => new ColorEntity(0.0f, 1.0f, 0.0f);
         public static ColorEntity Blue => new ColorEntity(0.0f, 0.0f, 1.0f);
+        public static ColorEntity Yellow => new ColorEntity(1.0f, 1.0f, 0.0f);
 
         public static ColorEntity Random() {
             float r = (float)random.NextDouble() * 0.8f + 0.2f;
