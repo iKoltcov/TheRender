@@ -71,7 +71,7 @@ namespace TheRender.Services
                 }
             }
         }
-        public void BasicLayerRaycasting(SceneEntity world)
+        public void TraceRays(SceneEntity world)
         {
             var generatedRays= new Vector3[world.NumOfRays];
             float DirectionX, DirectionY, DirectionZ;    //view direction
@@ -95,7 +95,10 @@ namespace TheRender.Services
                             world.PixelsHandler[heightIndex,widthIndex].Color = world.Materials[0].DiffuseColor;
                         else
                         {
-                            world.PixelsHandler[heightIndex, widthIndex].Color += tempPixel.Color;
+                            var color = rayProcessingService.CalculateColor(tempPixel, world,
+                                tempPixel.IntersectionCoordinate);
+                            world.PixelsHandler[heightIndex, widthIndex].Color += color;
+                            //world.PixelsHandler[heightIndex, widthIndex].Color += tempPixel.Color;
                             for (int ttl = 0; ttl < world.NumOfBounces; ttl++)
                             {
                                 if (surfaceEvent == 1)
@@ -112,7 +115,11 @@ namespace TheRender.Services
                                     if (surfaceEvent == 0) 
                                         break;
                                     else
-                                        world.PixelsHandler[heightIndex, widthIndex].Color += tempPixel.Color;
+                                    {
+                                        color = rayProcessingService.CalculateColor(tempPixel, world,
+                                            tempPixel.IntersectionCoordinate);
+                                        world.PixelsHandler[heightIndex, widthIndex].Color += color;
+                                    }
                                 }
                             }
                         }

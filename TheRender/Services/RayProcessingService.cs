@@ -37,13 +37,10 @@ namespace TheRender.Services
             return Vector3.Dot(refDir, sphereDist) > 0 ? Vector3.Multiply(sphereDist, (float)1e-3) : Vector3.Multiply(sphereDist, (float)-1e-3);
         }
 
-        public void NormalizeColorsByMax(IntersectionEntity pixelsHandler)
+        //public void GenerateColors(List<IntersectionEntity> pixelsHandler, SceneEntity world)
+        public Vector3 CalculateColor(IntersectionEntity pixelsHandler, SceneEntity world, Vector3 intersectionPoint)
         {
-            
-        }
-        public void GenerateColors(List<IntersectionEntity> pixelsHandler, SceneEntity world)
-        {
-            Vector3 point = new Vector3(0.0f, 0.0f, 0.0f);
+            //Vector3 point = new Vector3(0.0f, 0.0f, 0.0f);
             Vector3 N = new Vector3(0f, 0f, 0f);
 
             Vector3 result;
@@ -55,50 +52,51 @@ namespace TheRender.Services
             //shadows
             Vector3 shadowOrigin = new Vector3();
             Vector3 shadowPoint = new Vector3();
+            var res = new Vector3();
             
+            var rndSeed = new Random();
+            var lightIndex = rndSeed.Next(0,world.Lights.Count);
+            lightDirection = world.Lights[lightIndex].Center - intersectionPoint;
+            lightDistance = lightDirection.Length();
+            lightDirection = Vector3.Normalize(lightDirection);
+            
+            var pixelIntersected = pixelsHandler;
 
-            for (int i = 0; i < world.Lights.Count; i++)
+            //shadows
+            shadowOrigin = intersectionPoint + ShadowOriginDeltaCalc(lightDirection, pixelIntersected.FaceNormal);
+            if ((shadowPoint - shadowOrigin).Length() < lightDistance) //light behind geometry
             {
+                //res = world.Materials[0].DiffuseColor;
+                res = Vector3.Zero;
+                return res;
+            }
 
-                lightDirection = world.Lights[i].Center - point;
-                lightDistance = lightDirection.Length();
-                lightDirection = Vector3.Normalize(lightDirection);
+            //check if light's behind the object
+            if ((float) (Vector3.Dot(pixelIntersected.NormalizedViewDirection, pixelIntersected.FaceNormal) * Vector3.Dot(lightDirection, pixelIntersected.FaceNormal)) > 0f)
+            {
+                //res = world.Materials[0].DiffuseColor;
+                res = Vector3.Zero;
+                return res;
+            }
 
-                for (int j = 0; j < world.WinHeight; j++)
-                {
-                    for (int k = 0; j < world.WinWidth; k++)
-                    {
-                        var pixelIntersected = world.PixelsHandler[j, k];
-                        if(pixelIntersected.Hits==0)
-                            continue;
-                        //shadows
-                        shadowOrigin = point + ShadowOriginDeltaCalc(lightDirection, pixelIntersected.FaceNormal);
-                        if (world.PixelsHandler[j,k].Hits>0 && (shadowPoint - shadowOrigin).Length() < lightDistance)    //light behind geometry
-                            continue;
-
-                        //check if light's behind the object
-                        if ((float) (Vector3.Dot(pixelIntersected.NormalizedViewDirection, pixelIntersected.FaceNormal) * Vector3.Dot(lightDirection, pixelIntersected.FaceNormal)) > 0f)
-                            continue;
-
-                        diffuse_light_intensity += world.Lights[i].Intensity * Math.Abs(Vector3.Dot(lightDirection, pixelIntersected.FaceNormal)) /
+            diffuse_light_intensity += world.Lights[lightIndex].Intensity * Math.Abs(Vector3.Dot(lightDirection, pixelIntersected.FaceNormal)) /
                                                    (float) Math.Pow(lightDistance, 2);
-                        var refl = ReflectRay(lightDirection, pixelIntersected.FaceNormal);
-                        var spec = -1f * Vector3.Dot(refl, pixelIntersected.NormalizedViewDirection);
-                        var specComplete = Math.Pow(Math.Max(0f, spec), pixelIntersected.Material.SpecularExponent) *
+            var refl = ReflectRay(lightDirection, pixelIntersected.FaceNormal);
+            var spec = -1f * Vector3.Dot(refl, pixelIntersected.NormalizedViewDirection);
+            var specComplete = Math.Pow(Math.Max(0f, spec), pixelIntersected.Material.SpecularExponent) *
                                            Math.Abs(Vector3.Dot(lightDirection, N)) /
                                            (float) Math.Pow(lightDistance, 2);
-                        specular_light_intensity += specComplete * world.Lights[i].Intensity;
+            specular_light_intensity += specComplete * world.Lights[lightIndex].Intensity;
 
-                        var diffuseComponent =
+            var diffuseComponent =
                             Vector3.Multiply(Vector3.Multiply(pixelIntersected.Material.DiffuseColor, (float) diffuse_light_intensity),
                                 pixelIntersected.Material.Albedo.X);
-                        var specularComponent = Vector3.Multiply(new Vector3(1f, 1f, 1f),
-                            (float) specular_light_intensity * pixelIntersected.Material.Albedo.Y);
-                        //return diffuseComponent + specularComponent + reflectiveComponent;
-                        pixelIntersected.Color = diffuseComponent + specularComponent;
-                    }
-                }
-            }
+            var specularComponent = Vector3.Multiply(new Vector3(1f, 1f, 1f),
+            (float) specular_light_intensity * pixelIntersected.Material.Albedo.Y);
+            //return diffuseComponent + specularComponent + reflectiveComponent;
+            res = diffuseComponent + specularComponent;
+            
+            return res;
         }
     }
 }
