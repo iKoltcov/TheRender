@@ -1,4 +1,5 @@
-﻿using TheRender.Entities.Interfaces;
+﻿using TheRender.Entities;
+using TheRender.Entities.Interfaces;
 
 namespace TheRender.Results
 {
@@ -7,5 +8,7 @@ namespace TheRender.Results
         public IEssence Essence { get; set; }
 
         public CollisionResult Collision { get; set; } 
-    }
+
+        public RayEntity OriginRay { get; set; }
+    } 
 }

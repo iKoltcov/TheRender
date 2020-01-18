@@ -15,6 +15,7 @@ namespace TheRender.Services
 
         private readonly int countTask;
         private readonly object lockObject = new object();
+        private readonly object getLockObject = new object();
         private readonly CancellationTokenSource cancellationTokenSource;
 
         private readonly int width;
@@ -23,9 +24,8 @@ namespace TheRender.Services
 
         private readonly float fieldOfView = 1.57f;
         private readonly int maxDepthReflect = 7;
-        private readonly float epsilon = 1e-3f;
 
-        private readonly ColorEntity backgroundColor = new ColorEntity(0.0f, 0.4f, 0.6f);
+        private readonly ColorEntity backgroundColor = new ColorEntity(0.0f, 0.15f, 0.45f);
         private readonly ColorEntity defaultColor = new ColorEntity(0.3f, 0.3f, 0.3f);
 
         private readonly List<IEssence> essences;
@@ -74,7 +74,10 @@ namespace TheRender.Services
                 throw new NullReferenceException("Pixel array not initialized");
             }
 
-            return pixels;
+            lock (getLockObject)
+            {
+                return pixels;
+            }
         }
 
         public void Run()
@@ -158,35 +161,18 @@ namespace TheRender.Services
 
             foreach (var light in lights)
             {
-                var vectorToLight = light.Position - intersect.Collision.Point;
-                var directionToLight = vectorToLight.Normalize();
-                var distanceToLight = vectorToLight.Length();
+                //TODO[IK] This fucking bullshit. REWORK this!
+                var illuminance = light.GetIlluminance(this, intersect);
 
-                var rayToLight = new RayEntity()
+                if (illuminance.HasValue)
                 {
-                    Origin = Vector3.Dot(directionToLight, intersect.Collision.Normal) < 0
-                        ? intersect.Collision.Point - directionToLight * epsilon
-                        : intersect.Collision.Point + directionToLight * epsilon,
-                    Direction = directionToLight
-                };
-
-                var castRayToLight = SceneIntersect(rayToLight, distanceToLight);
-
-                if (castRayToLight?.Collision == null)
-                {
-                    diffuseLightIntensity += (light.Intensity / distanceToLight * distanceToLight) *
-                                             Math.Max(0.0f, Vector3.Dot(directionToLight, intersect.Collision.Normal));
-                    specularLightIntensity +=
-                        (float) Math.Pow(
-                            Math.Max(0.0f,
-                                -Vector3.Dot((-directionToLight).Reflect(intersect.Collision.Normal),
-                                    rayEntity.Direction)), intersect.Essence.Material.SpecularIntensity) *
-                        light.Intensity;
+                    diffuseLightIntensity += illuminance.Value.Diffuse;
+                    specularLightIntensity += illuminance.Value.Specular;
                 }
             }
 
             ColorEntity indirectIllumination;
-            double eventRandom = Random.NextDouble();
+            var eventRandom = Random.NextDouble();
 
             if (eventRandom <= intersect.Essence.Material.SpecularReflectComponent)
             {
@@ -194,8 +180,8 @@ namespace TheRender.Services
                 var reflectionRay = new RayEntity()
                 {
                     Origin = Vector3.Dot(reflectDirection, intersect.Collision.Normal) < 0
-                        ? intersect.Collision.Point - intersect.Collision.Normal * epsilon
-                        : intersect.Collision.Point + intersect.Collision.Normal * epsilon,
+                        ? intersect.Collision.Point - intersect.Collision.Normal * MathHelper.Epsilon
+                        : intersect.Collision.Point + intersect.Collision.Normal * MathHelper.Epsilon,
                     Direction = reflectDirection,
                 };
                 indirectIllumination = CastRay(reflectionRay, depth + 1);
@@ -207,8 +193,8 @@ namespace TheRender.Services
                 var reflectionRay = new RayEntity()
                 {
                     Origin = Vector3.Dot(diffuseReflectionDirection, intersect.Collision.Normal) < 0 
-                        ? intersect.Collision.Point - intersect.Collision.Normal * epsilon
-                        : intersect.Collision.Point + intersect.Collision.Normal * epsilon,
+                        ? intersect.Collision.Point - intersect.Collision.Normal * MathHelper.Epsilon
+                        : intersect.Collision.Point + intersect.Collision.Normal * MathHelper.Epsilon,
                     Direction = diffuseReflectionDirection,
                 };
                 indirectIllumination = CastRay(reflectionRay, depth + 1) * 0.5f;
@@ -229,7 +215,7 @@ namespace TheRender.Services
             return result;
         }
 
-        private SceneIntersectResult SceneIntersect(RayEntity rayEntity, float? distanceMax = null)
+        public SceneIntersectResult SceneIntersect(RayEntity rayEntity, float? distanceMax = null)
         {
             CollisionResult collisionRef = null;
             float? distanceMin = null;
@@ -266,7 +252,8 @@ namespace TheRender.Services
             return new SceneIntersectResult()
             {
                 Essence = essenceRef,
-                Collision = collisionRef
+                Collision = collisionRef,
+                OriginRay = rayEntity,
             };
         }
 

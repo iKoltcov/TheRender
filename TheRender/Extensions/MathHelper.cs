@@ -8,7 +8,8 @@ namespace TheRender.Extensions
     public static class MathHelper
     {
         private static readonly Random Random = new Random();
-        
+
+        public static readonly float Epsilon = 1e-3f;
         public static Vector3 Normalize(this Vector3 vector)
         {
             return Vector3.Normalize(vector);
@@ -19,9 +20,9 @@ namespace TheRender.Extensions
         }
         
         public static Vector3 DiffuseReflect(Vector3 normal) {
-            double h = 2.0 * Random.NextDouble() - 1.0;
-            double angleTh = Math.Asin(h);
-            double angleFi = Random.NextDouble() * Math.PI * 2.0;
+            var h = 2.0 * Random.NextDouble() - 1.0;
+            var angleTh = Math.Asin(h);
+            var angleFi = Random.NextDouble() * Math.PI * 2.0;
 
             var direction = new Vector3(
                 (float)(Math.Cos(angleTh) * Math.Cos(angleFi)),
