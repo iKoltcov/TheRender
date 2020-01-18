@@ -59,6 +59,11 @@ namespace TheRender.Entities
 
         public static ColorEntity operator *(ColorEntity color, float value)
         {
+            if (color == null)
+            {
+                return null;
+            }
+            
             var r = Math.Min(color.R * value, 1.0f);
             var g = Math.Min(color.G * value, 1.0f);
             var b = Math.Min(color.B * value, 1.0f);
@@ -67,15 +72,20 @@ namespace TheRender.Entities
         }
         
         public static ColorEntity operator *(float value, ColorEntity color)
-        {
+        {            
+            if (color == null)
+            {
+                return null;
+            }
+            
             return color * value;
         }
 
         public static ColorEntity operator +(ColorEntity leftColor, ColorEntity rightColor)
         {
-            var r = Math.Min(1.0f, leftColor.R + rightColor.R);
-            var g = Math.Min(1.0f, leftColor.G + rightColor.G);
-            var b = Math.Min(1.0f, leftColor.B + rightColor.B);
+            var r = Math.Min(1.0f, (leftColor?.R ?? 0.0f) + (rightColor?.R ?? 0.0f));
+            var g = Math.Min(1.0f, (leftColor?.G ?? 0.0f) + (rightColor?.G ?? 0.0f));
+            var b = Math.Min(1.0f, (leftColor?.B ?? 0.0f) + (rightColor?.B ?? 0.0f));
                 
             return new ColorEntity(r, g, b);
         }

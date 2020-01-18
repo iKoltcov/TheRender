@@ -23,7 +23,7 @@
                 Specular = 0.1f,
                 SpecularIntensity = 50.0f,
                 SpecularReflectComponent = 0.0f,
-                DiffuseReflectComponent = 0.3f,
+                DiffuseReflectComponent = 0.0f,
             };
         }
 

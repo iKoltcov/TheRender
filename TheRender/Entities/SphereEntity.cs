@@ -17,9 +17,9 @@ namespace TheRender.Entities
 
         public TriangleEntity[] Polygons { get; set; }
 
-        public SphereEntity(Vector3 position, float radius)
+        public SphereEntity(Vector3 position, float radius, MaterialEntity materialEntity)
         {
-            Material = MaterialEntity.Default();
+            Material = materialEntity;
             Position = position;
             Radius = radius;
             
@@ -70,32 +70,31 @@ namespace TheRender.Entities
         
         public CollisionResult CheckCollision(RayEntity ray)
         {
-            TriangleEntity triangleRef = null;
-            IntersectTriangleResult? collisionRef = null;
-            var minDistance = double.MaxValue;
-            
-            foreach (var polygon in Polygons)
-            {
-                var collision = ray.IntersectTriangle(polygon);
-                
-                if (collision.HasValue && minDistance > collision.Value.Distance)
-                {
-                    minDistance = collision.Value.Distance;
-                    triangleRef = polygon;
-                    collisionRef = collision;
-                }
-            }
+            var oc = ray.Origin - Position;
+            var a = Vector3.Dot(ray.Direction, ray.Direction);
+            var b = Vector3.Dot(oc, ray.Direction) * 2.0f;
+            var c = Vector3.Dot(oc, oc) - Radius * Radius;
 
-            if (triangleRef == null)
+            var discriminant = b * b - 4.0f * a * c;
+            if(discriminant < 0)
             {
                 return null;
             }
-            
+
+            var sqrtDiscriminant = (float)Math.Sqrt(discriminant);
+            var numerator = -b - sqrtDiscriminant;        
+            if(numerator <= 0.0f){
+                numerator = -b + sqrtDiscriminant;
+                if(numerator <= 0.0f){
+                    return null;
+                }
+            }
+
+            var point = ray.Origin + ray.Direction * (numerator / (2.0f * a));
             return new CollisionResult()
             {
-                Normal = triangleRef.Normal, 
-                //Normal = (collisionRef.Value.Point - Position).Normalize(),
-                Point = collisionRef.Value.Point,
+                Normal = (point - Position).Normalize(), 
+                Point = point,
             };
         }
     }

@@ -19,13 +19,13 @@ namespace TheRender.Services
 
         private readonly int width;
         private readonly int height;
-        private readonly PixelEntity[,] pixels;
+        private volatile PixelEntity[,] pixels;
 
         private readonly float fieldOfView = 1.57f;
         private readonly int maxDepthReflect = 7;
         private readonly float epsilon = 1e-3f;
 
-        private readonly ColorEntity backgroundColor = new ColorEntity(0.0f, 0.6f, 0.9f);
+        private readonly ColorEntity backgroundColor = new ColorEntity(0.0f, 0.4f, 0.6f);
         private readonly ColorEntity defaultColor = new ColorEntity(0.3f, 0.3f, 0.3f);
 
         private readonly List<IEssence> essences;
@@ -143,7 +143,7 @@ namespace TheRender.Services
         {
             if (depth > maxDepthReflect)
             {
-                return backgroundColor;
+                return ColorEntity.Black;
             }
 
             var intersect = SceneIntersect(rayEntity);
@@ -185,7 +185,7 @@ namespace TheRender.Services
                 }
             }
 
-            var indirectIllumination = new ColorEntity(0.0f, 0.0f, 0.0f);
+            ColorEntity indirectIllumination;
             double eventRandom = Random.NextDouble();
 
             if (eventRandom <= intersect.Essence.Material.SpecularReflectComponent)
@@ -211,18 +211,22 @@ namespace TheRender.Services
                         : intersect.Collision.Point + intersect.Collision.Normal * epsilon,
                     Direction = diffuseReflectionDirection,
                 };
-                indirectIllumination = CastRay(reflectionRay, depth + 1);
+                indirectIllumination = CastRay(reflectionRay, depth + 1) * 0.5f;
             }
-
-            if (indirectIllumination == null)
+            else
             {
-                return intersect.Essence.Material.Color * diffuseLightIntensity * intersect.Essence.Material.Diffuse
-                       + ColorEntity.White * specularLightIntensity * intersect.Essence.Material.Specular;
+                indirectIllumination = ColorEntity.Black;
             }
 
-            return (intersect.Essence.Material.Color * diffuseLightIntensity * intersect.Essence.Material.Diffuse
-                    + ColorEntity.White * specularLightIntensity * intersect.Essence.Material.Specular
-                    + indirectIllumination) * 0.5f;
+            
+            var result = intersect.Essence.Material.Color * diffuseLightIntensity * intersect.Essence.Material.Diffuse
+                         + ColorEntity.White * specularLightIntensity * intersect.Essence.Material.Specular;
+            if (indirectIllumination != null)
+            {
+                result += indirectIllumination;
+            }
+
+            return result;
         }
 
         private SceneIntersectResult SceneIntersect(RayEntity rayEntity, float? distanceMax = null)
